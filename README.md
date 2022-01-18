@@ -3,9 +3,6 @@ Keyboard Layout Plugin for Wayfire
 
 Based on simple IPC sockets. The plugin creates a socket `/tmp/kbl_server` and each client creates a socket `/tmp/kbl_client_<timestamp>`. Clients send a request to the server (plugin), and the server (plugin) sends the current keyboard layout when it changes.
 
-## TODO
- * Get layout list from XKBlayout from Wayfire config 
-
 ## Build
 
 ~~~bash

@@ -40,12 +40,12 @@ public:
 	}
 
 	void start () {
-		int layout_index;
+		char layout[2];
 
 		while (true) {
 			request();
-			layout_index = recv_data();      
-		 	cout << get_layout_by_index(layout_index) << endl;
+			recv_data(layout, sizeof(layout));      
+		 	cout << layout << endl;
 		 	this_thread::sleep_for(milliseconds(100));
 		}
 
@@ -70,24 +70,11 @@ private:
 	    }
 	}
 
-	int recv_data () {
-		int layout_index = -1;
-		if (recvfrom(fd, &layout_index, sizeof(layout_index), 0, NULL, NULL) < 0) {
+	void recv_data (void* data, size_t size) {
+		if (recvfrom(fd, data, size, 0, NULL, NULL) < 0) {
 	 		close(fd);
 	 		throw runtime_error("recv error");
 	 	}
-	 	return layout_index;
-	}
-
-	static const char* get_layout_by_index (int index) {
-		switch (index) {
-			case 0:
-				return "us";
-			case 1:
-				return "ru";
-			default:
-				return "--";
-		}
 	}
 
 };

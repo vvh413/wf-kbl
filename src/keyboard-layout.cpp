@@ -1,3 +1,5 @@
+#include <wayfire/core.hpp>
+#include <wayfire/option-wrapper.hpp>
 #include <wayfire/plugin.hpp>
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/util/log.hpp>
@@ -17,7 +19,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
     int sd;
     struct sockaddr_un server_addr;
     xkb_layout_index_t current_layout;
-
+    wf::option_wrapper_t<std::string> xkb_layout {"input/xkb_layout"};
 
     xkb_layout_index_t get_kb_layout () {
         wlr_seat* seat = wf::get_core().get_current_seat();
@@ -26,32 +28,39 @@ class keyboard_layout_t : public wf::plugin_interface_t {
                                           XKB_STATE_LAYOUT_LOCKED);
     }
 
+    void index2lang (xkb_layout_index_t layout, char* lang) {
+        strcpy(lang, xkb_layout.value().substr(layout * 3, 2).c_str());
+    } 
+
     wf::signal_callback_t on_key = [=] (wf::signal_data_t*) {
         xkb_layout_index_t layout = get_kb_layout();
         if (layout == current_layout)
             return;
 
         current_layout = layout;
-
         LOG(wf::log::LOG_LEVEL_DEBUG, "layout: ", layout);
+        
+        char lang[2];
+        index2lang(layout, lang);
+        LOG(wf::log::LOG_LEVEL_DEBUG, "lang: ", lang);
 
         struct sockaddr_un client_addr;
-        socklen_t size = sizeof(client_addr);
-        while (get_request(&client_addr, &size)) 
-            send_to(layout, &client_addr, size);
+        socklen_t socklen = sizeof(client_addr);
+        while (get_request(&client_addr, &socklen)) 
+            send_to(lang, sizeof(lang), &client_addr, socklen);
     };
 
-    bool get_request (struct sockaddr_un* addr, socklen_t* size) {
+    bool get_request (struct sockaddr_un* addr, socklen_t* socklen) {
         LOG(wf::log::LOG_LEVEL_DEBUG, "get_request");
-        int ret = recvfrom(sd, NULL, 0, MSG_DONTWAIT, (struct sockaddr*) addr, size);
+        int ret = recvfrom(sd, NULL, 0, MSG_DONTWAIT, (struct sockaddr*) addr, socklen);
         LOG(wf::log::LOG_LEVEL_DEBUG, addr->sun_path);
         LOG(wf::log::LOG_LEVEL_DEBUG, ret >= 0);
         return ret >= 0;
     }
 
-    void send_to (xkb_layout_index_t layout, struct sockaddr_un* addr, socklen_t size) {
+    void send_to (void* data, size_t size, struct sockaddr_un* addr, socklen_t socklen) {
         LOG(wf::log::LOG_LEVEL_DEBUG, "send_to");
-        int ret = sendto(sd, &layout, sizeof(layout), 0, (struct sockaddr*)addr, size);
+        int ret = sendto(sd, data, size, 0, (struct sockaddr*)addr, socklen);
         if (ret < 0)
             LOG(wf::log::LOG_LEVEL_ERROR, "sendto");
     }
