@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="keyboard-layout">
+	<_short>Keyboard Layout</_short>
+	<_long>Get current keyboard layout</_long>
+	<category>Utility</category>
+	</plugin>
+</wayfire>
