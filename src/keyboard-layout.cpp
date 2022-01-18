@@ -16,15 +16,23 @@ class keyboard_layout_t : public wf::plugin_interface_t {
 
     int sd;
     struct sockaddr_un server_addr;
+    xkb_layout_index_t current_layout;
 
-    wf::signal_callback_t on_key = [=] (wf::signal_data_t* data) {
-        if (((wf::input_event_signal<wlr_event_keyboard_key>*)data)->event->keycode != 57)
-            return;
-        
+
+    xkb_layout_index_t get_kb_layout () {
         wlr_seat* seat = wf::get_core().get_current_seat();
         wlr_keyboard* keyboard = wlr_seat_get_keyboard(seat);
-        xkb_layout_index_t layout = xkb_state_serialize_layout(keyboard->xkb_state,
-                                            XKB_STATE_LAYOUT_LOCKED);
+        return xkb_state_serialize_layout(keyboard->xkb_state,
+                                          XKB_STATE_LAYOUT_LOCKED);
+    }
+
+    wf::signal_callback_t on_key = [=] (wf::signal_data_t*) {
+        xkb_layout_index_t layout = get_kb_layout();
+        if (layout == current_layout)
+            return;
+
+        current_layout = layout;
+
         LOG(wf::log::LOG_LEVEL_DEBUG, "layout: ", layout);
 
         struct sockaddr_un client_addr;
@@ -72,6 +80,7 @@ public:
     void init () override {
         wf::get_core().connect_signal("keyboard_key", &on_key);
         init_sock();
+        current_layout = get_kb_layout();
     }
 
     void fini() override {
