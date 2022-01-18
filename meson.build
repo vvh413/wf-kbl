@@ -2,7 +2,7 @@ project(
 	'wf-kbl-vvh413',
     'c',
 	'cpp',
-	version: '0.3',
+	version: '0.4',
 	license: 'MIT',
 	meson_version: '>=0.51.0',
 	default_options: [
