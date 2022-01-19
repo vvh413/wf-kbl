@@ -5,7 +5,7 @@ Based on simple IPC sockets. The plugin creates a socket `/tmp/kbl_server` and e
 
 ## TODO
  * Fix Wayfire crash on plugin reload
- * When the client starts print the current layout (currently it only prints on layout change after the client starts)
+ * When the client starts print the current layout (currently it only prints on first key event after the client starts)
 
 ## Build
 
