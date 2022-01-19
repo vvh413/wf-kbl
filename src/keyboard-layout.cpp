@@ -18,7 +18,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
 
     int sd;
     struct sockaddr_un server_addr;
-    xkb_layout_index_t current_layout;
+    xkb_layout_index_t current_layout = -1;
     wf::option_wrapper_t<std::string> xkb_layout {"input/xkb_layout"};
 
     xkb_layout_index_t get_kb_layout () {
@@ -66,11 +66,11 @@ class keyboard_layout_t : public wf::plugin_interface_t {
             LOG(wf::log::LOG_LEVEL_ERROR, "sendto");
     }
 
-    void init_sock () {
+    int init_sock () {
         if ((sd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
             LOG(wf::log::LOG_LEVEL_ERROR, "socket error");
             close(sd);
-            return;
+            return 1;
         }
 
         memset(&server_addr, 0, sizeof(server_addr));
@@ -81,16 +81,16 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         if (bind(sd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
             LOG(wf::log::LOG_LEVEL_ERROR, "bind error");
             close(sd);
-            return;
+            return 2;
         }
+        return 0;
     }
 
 public:
 
     void init () override {
-        init_sock();
+        if (init_sock()) return;
         wf::get_core().connect_signal("keyboard_key", &on_key);
-        on_key(NULL);
     }
 
     void fini() override {
