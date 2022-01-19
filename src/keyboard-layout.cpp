@@ -30,7 +30,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
 
     void index2lang (xkb_layout_index_t layout, char* lang) {
         strcpy(lang, xkb_layout.value().substr(layout * 3, 2).c_str());
-    } 
+    }
 
     wf::signal_callback_t on_key = [=] (wf::signal_data_t*) {
         xkb_layout_index_t layout = get_kb_layout();
@@ -45,6 +45,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         LOG(wf::log::LOG_LEVEL_DEBUG, "lang: ", lang);
 
         struct sockaddr_un client_addr;
+        memset(&client_addr, 0, sizeof(client_addr));
         socklen_t socklen = sizeof(client_addr);
         while (get_request(&client_addr, &socklen)) 
             send_to(lang, sizeof(lang), &client_addr, socklen);
@@ -69,7 +70,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         if ((sd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
             LOG(wf::log::LOG_LEVEL_ERROR, "socket error");
             close(sd);
-            exit(1);
+            return;
         }
 
         memset(&server_addr, 0, sizeof(server_addr));
@@ -80,16 +81,16 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         if (bind(sd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
             LOG(wf::log::LOG_LEVEL_ERROR, "bind error");
             close(sd);
-            exit(2);
+            return;
         }
     }
 
 public:
 
     void init () override {
-        wf::get_core().connect_signal("keyboard_key", &on_key);
         init_sock();
-        current_layout = get_kb_layout();
+        wf::get_core().connect_signal("keyboard_key", &on_key);
+        on_key(NULL);
     }
 
     void fini() override {
