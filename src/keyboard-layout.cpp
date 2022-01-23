@@ -94,6 +94,7 @@ public:
     }
 
     void fini() override {
+        wf::get_core().disconnect_signal("keyboard_key", &on_key);
         close(sd);
     }
 };
