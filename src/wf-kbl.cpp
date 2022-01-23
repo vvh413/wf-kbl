@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <ratio>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -83,7 +84,7 @@ private:
 int main () {
 
 	const auto now = high_resolution_clock::now();
-	const int timestamp = duration_cast<milliseconds>(now.time_since_epoch()).count();
+	const long int timestamp = duration_cast<microseconds>(now.time_since_epoch()).count();
 	const string client_path = string(CLIENT_PATH) + "_" + to_string(timestamp);
 
 	Client client (SERVER_PATH, client_path.c_str());
