@@ -4,6 +4,7 @@ Keyboard Layout Plugin for [Wayfire](https://github.com/WayfireWM/wayfire)
 Based on simple IPC sockets. The plugin creates a socket `/tmp/kbl_server` and each client creates a socket `/tmp/kbl_client_<timestamp>`. Clients send a request to the server (plugin), and the server (plugin) sends the current keyboard layout when it changes.
 
 ## TODO
+ * Fix wayfire crashes after **pipewire restart or bluetooth headphones disconnect (!?!?!?!?)**. Plugin reload no longer crashes Wayfire, but... idk...
  * Automatic client reload on plugin reload
  * When the client starts print the current layout (currently it only prints on first key event after the client starts)
 
