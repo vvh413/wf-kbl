@@ -24,42 +24,45 @@ class keyboard_layout_t : public wf::plugin_interface_t {
     xkb_layout_index_t get_kb_layout () {
         wlr_seat* seat = wf::get_core().get_current_seat();
         wlr_keyboard* keyboard = wlr_seat_get_keyboard(seat);
+        if (!keyboard)
+            return -1;
         return xkb_state_serialize_layout(keyboard->xkb_state,
                                           XKB_STATE_LAYOUT_LOCKED);
     }
 
     void index2lang (xkb_layout_index_t layout, char* lang) {
+
         strcpy(lang, xkb_layout.value().substr(layout * 3, 2).c_str());
     }
 
     wf::signal_callback_t on_key = [=] (wf::signal_data_t*) {
         xkb_layout_index_t layout = get_kb_layout();
-        if (layout == current_layout)
+        if (layout == current_layout || layout == (xkb_layout_index_t)-1)
             return;
 
         current_layout = layout;
-        LOG(wf::log::LOG_LEVEL_DEBUG, "layout: ", layout);
-        
+        LOGD("layout: ", layout);
+
         char lang[2];
         index2lang(layout, lang);
-        LOG(wf::log::LOG_LEVEL_DEBUG, "lang: ", lang);
+        LOGD("lang: ", lang);
 
         send2all(lang, sizeof(lang));
     };
 
     bool get_request (struct sockaddr_un* addr, socklen_t* socklen) {
-        LOG(wf::log::LOG_LEVEL_DEBUG, "get_request");
+        LOGD("get_request");
         int ret = recvfrom(sd, NULL, 0, MSG_DONTWAIT, (struct sockaddr*) addr, socklen);
-        LOG(wf::log::LOG_LEVEL_DEBUG, addr->sun_path);
-        LOG(wf::log::LOG_LEVEL_DEBUG, ret >= 0);
+        LOGD(addr->sun_path);
+        LOGD(ret >= 0);
         return ret >= 0;
     }
 
     void send_to (void* data, size_t size, struct sockaddr_un* addr, socklen_t socklen) {
-        LOG(wf::log::LOG_LEVEL_DEBUG, "send_to");
+        LOGD("send_to");
         int ret = sendto(sd, data, size, 0, (struct sockaddr*)addr, socklen);
         if (ret < 0)
-            LOG(wf::log::LOG_LEVEL_ERROR, "sendto");
+            LOGE("sendto");
     }
 
     void send2all (void* data, size_t size) {
@@ -72,7 +75,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
 
     int init_sock () {
         if ((sd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
-            LOG(wf::log::LOG_LEVEL_ERROR, "socket error");
+            LOGE("socket error");
             close(sd);
             return 1;
         }
@@ -83,7 +86,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
 
         unlink(SERVER_PATH);
         if (bind(sd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
-            LOG(wf::log::LOG_LEVEL_ERROR, "bind error");
+            LOGE("bind error");
             close(sd);
             return 2;
         }

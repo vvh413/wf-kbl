@@ -6,7 +6,6 @@ Based on simple IPC sockets. The plugin creates a socket `/tmp/kbl_server` and e
 When the server (plugin) shuts down, it sends end message "--" to each client. So clients stop listening at this moment.
 
 ## TODO
- * Fix wayfire crashes after **pipewire restart or bluetooth headphones disconnect (!?!?!?!?)**. Plugin reload no longer crashes Wayfire, but on when changes the amount of input devices method `get_kb_layout` throws `Segmentation fault`.
  * When the client starts print the current layout (currently it only prints on first key event after the client starts)
 
 ## Build
