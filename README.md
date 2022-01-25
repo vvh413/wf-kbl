@@ -3,9 +3,10 @@ Keyboard Layout Plugin for [Wayfire](https://github.com/WayfireWM/wayfire)
 
 Based on simple IPC sockets. The plugin creates a socket `/tmp/kbl_server` and each client creates a socket `/tmp/kbl_client_<timestamp>`. Clients send a request to the server (plugin), and the server (plugin) sends the current keyboard layout when it changes.
 
+When the server (plugin) shuts down, it sends end message "--" to each client. So clients stop listening at this moment.
+
 ## TODO
- * Fix wayfire crashes after **pipewire restart or bluetooth headphones disconnect (!?!?!?!?)**. Plugin reload no longer crashes Wayfire, but... idk...
- * Automatic client reload on plugin reload
+ * Fix wayfire crashes after **pipewire restart or bluetooth headphones disconnect (!?!?!?!?)**. Plugin reload no longer crashes Wayfire, but on when changes the amount of input devices method `get_kb_layout` throws `Segmentation fault`.
  * When the client starts print the current layout (currently it only prints on first key event after the client starts)
 
 ## Build

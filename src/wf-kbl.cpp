@@ -45,7 +45,11 @@ public:
 
 		while (true) {
 			request();
-			recv_data(layout, sizeof(layout));      
+			recv_data(layout, sizeof(layout));
+			if (!strcmp(layout, "--")) {
+				cout << "socket closed" << endl;
+				return;
+			}
 		 	cout << layout << endl;
 		 	this_thread::sleep_for(milliseconds(100));
 		}

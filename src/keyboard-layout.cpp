@@ -44,11 +44,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         index2lang(layout, lang);
         LOG(wf::log::LOG_LEVEL_DEBUG, "lang: ", lang);
 
-        struct sockaddr_un client_addr;
-        memset(&client_addr, 0, sizeof(client_addr));
-        socklen_t socklen = sizeof(client_addr);
-        while (get_request(&client_addr, &socklen)) 
-            send_to(lang, sizeof(lang), &client_addr, socklen);
+        send2all(lang, sizeof(lang));
     };
 
     bool get_request (struct sockaddr_un* addr, socklen_t* socklen) {
@@ -64,6 +60,14 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         int ret = sendto(sd, data, size, 0, (struct sockaddr*)addr, socklen);
         if (ret < 0)
             LOG(wf::log::LOG_LEVEL_ERROR, "sendto");
+    }
+
+    void send2all (void* data, size_t size) {
+        struct sockaddr_un client_addr;
+        memset(&client_addr, 0, sizeof(client_addr));
+        socklen_t socklen = sizeof(client_addr);
+        while (get_request(&client_addr, &socklen)) 
+            send_to(data, size, &client_addr, socklen);
     }
 
     int init_sock () {
@@ -95,6 +99,8 @@ public:
 
     void fini() override {
         wf::get_core().disconnect_signal("keyboard_key", &on_key);
+        char end[] = "--";
+        send2all(end, sizeof(end));
         close(sd);
     }
 };
