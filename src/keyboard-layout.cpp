@@ -1,4 +1,5 @@
 #include <wayfire/core.hpp>
+#include <wayfire/object.hpp>
 #include <wayfire/option-wrapper.hpp>
 #include <wayfire/plugin.hpp>
 #include <wayfire/signal-definitions.hpp>
@@ -35,7 +36,7 @@ class keyboard_layout_t : public wf::plugin_interface_t {
         strcpy(lang, xkb_layout.value().substr(layout * 3, 2).c_str());
     }
 
-    wf::signal_callback_t on_key = [=] (wf::signal_data_t*) {
+    wf::signal_connection_t on_key = [=] (wf::signal_data_t*) {
         xkb_layout_index_t layout = get_kb_layout();
         if (layout == current_layout || layout == (xkb_layout_index_t)-1)
             return;
@@ -101,7 +102,7 @@ public:
     }
 
     void fini() override {
-        wf::get_core().disconnect_signal("keyboard_key", &on_key);
+        wf::get_core().disconnect_signal(&on_key);
         char end[] = "--";
         send2all(end, sizeof(end));
         close(sd);
